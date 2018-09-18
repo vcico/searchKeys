@@ -7,8 +7,8 @@ class Config:
     config_file = 'setting.conf'
     
     config_handle = {
-        'array' : ['search'],
-        'integer' : ['page_count'],
+        'array' : ['search','result_method'],
+        'integer' : ['thread_count','result_count'], #'page_count',
     }
     
     array_delimiter = '|'
@@ -48,8 +48,9 @@ class Config:
         except ValueError,e:
             raise Exception("Configuration format error: %s Must be number " % field)
         return result
-        
+
 configure = Config().getConfig()
+
 
 if __name__ == '__main__':
     pass

@@ -1,41 +1,77 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 
+class Field():
+    """Container of field metadata"""
 
-class PageMetaclass(type):
+class ItemMetaclass(type):
     def __new__(cls, name, bases, attrs):
-        print cls
-        print name
-        print bases
-        print attrs
-        return type.__new__(cls, name, bases, attrs)
+        x_class = type.__new__(cls,'x_'+name,bases,attrs)
+        fields = getattr(x_class,"fields",{})
+        new_attrs = {}
+        for n in dir(x_class):
+            v = getattr(x_class,n)
+            if isinstance(v,Field):
+                fields[n] = None
+            elif n in attrs:
+                new_attrs[n] = attrs[n]
+        new_attrs['fields'] = fields
+        new_attrs['_class'] = x_class
+        return type.__new__(cls, name, bases, new_attrs)
 
 """
 页面对象
-根据搜索引擎搜索的单个结果：是否报危险，TDK， 搜索标题下的排名，整体内容等 生成页面对象
+是否报危险，TDK， 搜索标题下的排名，整体内容等 生成页面对象
 访问目标站 判断 wap
 记录目标站的结果
 """
-class Page:
+class Page():
 
-    __metaclass__ = PageMetaclass
+    __metaclass__ = ItemMetaclass
 
-    search_title = ''
-    search_keyword = ''
-    search_description = ''
-    search_content = ''
-    search_index = ''
+    # search_text = Field() # 搜索的文字
+    # search_name = Field() # 搜索引擎的名称
 
-    danger_msg = ''
-    is_wap = ''
+    search_title = Field()
+    search_keyword = Field()
+    search_description = Field()
+    search_content = Field()
+    search_index = Field()
+    search_url = Field()
 
-    title = ''
-    keyword = ''
-    description = ''
+    danger_msg = Field()
+    is_wap = Field()
 
-    # 模板页面 内容中的 H 或 strong 重点标签
-    focus  = ''
+    url = Field()
+    title = Field()
+    keyword = Field()
+    description = Field()
+    focus  = Field() # 模板页面 内容中的 H 或 strong 重点标签
 
+    def __getitem__(self, key):
+        return self.fields[key]
+
+    def __setitem__(self, key, value):
+        if key in self.fields:
+            self.fields[key] = value
+        else:
+            raise KeyError("%s does not support field: %s" %
+                (self.__class__.__name__, key))
+
+    def __delitem__(self, key):
+        del self.fields[key]
+
+    def __iter__(self):
+        return iter(self.fields)
+
+    def __str__(self):
+        return "<Page %s %s>"% (self.search_text,self.search_name)
 
 if __name__ == '__main__':
-    a = Page()
+    pass
+    # a = Page()
+    # a['focus'] = "fdafdfaf"
+    # for k in a:
+    #     print a.fields[k]
+    # print
+    # print ( Field(x='d') )
