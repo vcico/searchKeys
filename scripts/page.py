@@ -29,8 +29,8 @@ class Page():
 
     __metaclass__ = ItemMetaclass
 
-    # search_text = Field() # 搜索的文字
-    # search_name = Field() # 搜索引擎的名称
+    search_text = Field() # 搜索的文字
+    search_name = Field() # 搜索引擎的名称
 
     search_title = Field()
     search_keyword = Field()
@@ -38,10 +38,9 @@ class Page():
     search_content = Field()
     search_index = Field()
     search_url = Field()
-
     danger_msg = Field()
-    is_wap = Field()
 
+    is_wap = Field()
     url = Field()
     title = Field()
     keyword = Field()

@@ -8,6 +8,7 @@ import os
 from scripts.exceptions import ConfigException
 # from scripts.page import Page
 from threading import Thread
+import time
 
 def initSearch():
     """
@@ -48,6 +49,9 @@ searchs = initSearch()
 def worker(name,keyQueue,searchs,resultQueue):
     while True:
         item = keyQueue.get()
+        # for _,searchObj in searchs.items():
+        #     print searchObj
+        print searchs[item[0]]
         resultQueue.put( "%s %s %s " % (name,item[0],item[1]))
         keyQueue.task_done()
 

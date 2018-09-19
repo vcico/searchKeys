@@ -1,23 +1,30 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 
+import requests
+from scripts.searchEngine import SearchEngine
 
-"""
-百度结果爬取
 
-1、接收Page对象
-2、产生URL
-3、爬取列表 / 根据配置下一页
-4、记录列表页内容
-5、爬取目标站 / 判断是否手机端
-6、记录目标站内容
+class Baidu(SearchEngine):
 
-"""
-
-class Baidu:
 
     def __init__(self):
         print 'this is baidu '
+
+    def url(self,keyword,pageCount):
+        urls = []
+        for i in range(pageCount):
+            urls.append(u"http://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=0&rsv_idx=1&tn=baidu&wd=%s&pn=%d" % (keyword,10*i))
+        return urls
+
+    def searchRows(self,url):
+        # [ {search_title: search_keyword: search_description: search_content: search_index: search_url: danger_msg: }, ]
         pass
-        
-        
+
+
+
+
+if __name__ == '__main__':
+    # import sys
+    # print sys.path
+    Baidu().search(('baidu',u'凉凉'))

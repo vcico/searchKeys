@@ -14,12 +14,13 @@ class Config:
     array_delimiter = '|'
 
     def __init__(self):
-        if not os.path.isfile(self.config_file):
+        # print "%s/%s" % (os.path.dirname(os.path.realpath(__file__)),self.config_file)
+        if not os.path.isfile("%s/%s" % (os.path.dirname(os.path.realpath(__file__)),self.config_file)):
             raise Exception('configure file is not exist')
         self.config = {}
 
     def getConfig(self):
-        f = open(self.config_file,'r')
+        f = open("%s/%s" % (os.path.dirname(os.path.realpath(__file__)),self.config_file),'r')
         for line in f.readlines():
             data=line.strip()
             if len(data) != 0:
