@@ -5,7 +5,7 @@ from config import configure
 import math
 from scripts.page import Page
 import requests
-from abc import ABCMeta,abstractmethod
+from abc import ABCMeta,abstractmethod,abstractproperty
 import random
 
 """
@@ -21,6 +21,8 @@ class SearchEngine:
     __metaclass__ = ABCMeta
 
     pageSize = 10.0
+
+    sleep = 0 # 同一个搜索引擎 每爬取一个页面休眠？秒
 
     @abstractmethod
     def url(self, keyword, pageCount):

@@ -25,11 +25,8 @@ def initSearch():
             raise ConfigException('config error. search engine processor not exist: %s' % s)
     return searchs
 
-def pushKeyQueue():
-    """
-    增加页面对象队列元素
-    :return: Queue
-    """
+def keywords():
+    kws = []
     if not os.path.isfile(configure['keyword_file']):
         raise Exception('keywords file is not exist')
     f = open(configure['keyword_file'], 'r')
@@ -37,6 +34,15 @@ def pushKeyQueue():
         key = line.strip()
         if not key:
             continue
+        kws.append(key)
+    return kws
+
+def pushKeyQueue():
+    """
+    增加页面对象队列元素
+    :return: Queue
+    """
+    for key in keywords():
         for search_name in searchs.keys():
             keyQueue.put((search_name,key))
 
@@ -45,8 +51,13 @@ def worker(name,keyQueue,searchs,resultQueue):
         item = keyQueue.get()
         searcher = searchs[item[0]]
         # searcher.search(item)
-        resultQueue.put( "%s %s %s " % (name,item[0],item[1]))
+        resultQueue.put( "%s %s %s  : %d" % (name,item[0],item[1],searcher.sleep))
         keyQueue.task_done()
+
+def workForSearch(name,keys,searcher,resultQueue):
+    print searcher
+    for key in keys:
+        resultQueue.put("$$%s %s %s  : %d" % (name, name, key,searcher.sleep))
 
 def result(resultQueue):
     while True:
@@ -55,7 +66,22 @@ def result(resultQueue):
         resultQueue.task_done()
 
 if  configure['sleep_minute']:
-    pass
+    resultQueue = Queue()
+    searchs = initSearch()
+    keys = keywords()
+    searchThreads = []
+    for name,searcher in searchs.items():
+        searcher.sleep = configure['sleep_minute'] # 休眠秒数
+        t = Thread(target=workForSearch(name,keys,searcher,resultQueue))
+        t.daemon = True
+        t.start()
+        searchThreads.append(t)
+    t = Thread(target=result, args=(resultQueue,))
+    t.daemon = True
+    t.start()
+    for t in searchThreads:
+        t.join()
+    resultQueue.join()
 else:
     keyQueue = Queue()
     resultQueue = Queue()
