@@ -5,6 +5,8 @@ from Crypto.Cipher import AES
 import json
 import time
 import requests
+import wmi
+
 
 class Auth:
 
@@ -24,6 +26,7 @@ class Auth:
             'auth_key':auth_key,
             'errors':[], # 过期时间 30天 那么连续30天都是错误 就有30个错误信息，每次成功验证后 错误都清空
             # 1, 请求api失败 2, 服务超时需要续费 3 api请求到的数据非数字
+            'error_time':0, # 连续错误的首个错误的时间 每次成功验证后 错误时间都清空
         }
         self.write(data)
 
@@ -111,14 +114,29 @@ class Auth:
             print "Warning:: Permission verification failed. 30 days without verification will be expired.\n"
         return v
 
+def main_board_identify():
+    """
+    主板标识
+    :see: https://blog.csdn.net/fengmm521/article/details/79468677
+    :return:
+    """
+    c = wmi.WMI()
+    boards = ''
+    for board_id in c.Win32_BaseBoard():
+        boards += board_id.qualifiers['UUID'][1:-1]
+        boards += board_id.SerialNumber
+        boards += board_id.Manufacturer
+        boards += board_id.Product
+    return boards
 
 if __name__ == '__main__':
-    a = Auth()
+    # a = Auth()
     # m = a.encrypt("Hello, World123!")
     # print m
     # print a.decipher(m)
     # a.write("this is an example")
     # a.init_data('abcdefg1234567890')
     # print a.read()
+    # Main_board()
     pass
 

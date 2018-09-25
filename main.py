@@ -40,18 +40,11 @@ def pushKeyQueue():
         for search_name in searchs.keys():
             keyQueue.put((search_name,key))
 
-
-keyQueue = Queue()
-resultQueue = Queue()
-searchs = initSearch()
-
-
 def worker(name,keyQueue,searchs,resultQueue):
     while True:
         item = keyQueue.get()
-        # for _,searchObj in searchs.items():
-        #     print searchObj
-        print searchs[item[0]]
+        searcher = searchs[item[0]]
+        # searcher.search(item)
         resultQueue.put( "%s %s %s " % (name,item[0],item[1]))
         keyQueue.task_done()
 
@@ -61,17 +54,22 @@ def result(resultQueue):
         print '--', item
         resultQueue.task_done()
 
-for i in range(configure['thread_count']):
-     t = Thread(target=worker,args=(i,keyQueue,searchs,resultQueue))
-     t.daemon = True
-     t.start()
-t = Thread(target=result,args=(resultQueue,))
-t.daemon = True
-t.start()
-
-pushKeyQueue()  # 队列增加
-keyQueue.join()     # block until all tasks are done
-resultQueue.join()     # block until all tasks are done
+if  configure['sleep_minute']:
+    pass
+else:
+    keyQueue = Queue()
+    resultQueue = Queue()
+    searchs = initSearch()
+    for i in range(configure['thread_count']):
+         t = Thread(target=worker,args=(i,keyQueue,searchs,resultQueue))
+         t.daemon = True
+         t.start()
+    t = Thread(target=result,args=(resultQueue,))
+    t.daemon = True
+    t.start()
+    pushKeyQueue()  # 队列增加
+    keyQueue.join()     # block until all tasks are done
+    resultQueue.join()     # block until all tasks are done
 
 if __name__ == '__main__':
     #print configure

@@ -7,8 +7,8 @@ class Config:
     config_file = 'setting.conf'
     
     config_handle = {
-        'array' : ['search','result_method'],
-        'integer' : ['thread_count','result_count'], #'page_count',
+        'array' : ['search','result_method','terminals'],
+        'integer' : ['thread_count','result_count','retry_count','sleep_minute'], #'page_count',
     }
     
     array_delimiter = '|'
