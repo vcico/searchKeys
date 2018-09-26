@@ -3,8 +3,9 @@
 
 
 from scripts.searchEngine import SearchEngine
-from lxml import etree
-import HTMLParser
+# from lxml import etree
+# import HTMLParser
+from parsel import Selector
 
 
 class Baidu(SearchEngine):
@@ -25,26 +26,28 @@ class Baidu(SearchEngine):
         # [ {search_title: search_keyword: search_description: search_content: search_index: search_url: danger_msg: }, ]
         # response = self.request(url)
         # selector = etree.HTML(response.text)
-
-
-        parser = HTMLParser.HTMLParser()
         with open('test.html', 'r') as f:
             content = f.read()
-        selector = etree.HTML(content)
-        rows = selector.xpath("//div[@id='content_left']/div[@class='result c-container ']")
-        for row in rows:
-            # print row.getchildren()
-            print row.values()
-            """
-            nodeString = u''
-            for n in row.xpath("./h3/a/node()"):
-                if isinstance(n, etree._Element):
-                    nodeString += parser.unescape(etree.tostring(n,encoding="UTF-8")) # print  etree.tostring(n, pretty_print=True),
-                    break
-                else:
-                    nodeString += n
-            print nodeString
-            """
+        sel = Selector(text=content.decode("utf-8"))
+        for node in  sel.xpath("//div[@id='content_left']/div[@class='result c-container ']"):
+            print node.extract()
+        # parser = HTMLParser.HTMLParser()
+
+        # selector = etree.HTML(content)
+        # rows = selector.xpath("//div[@id='content_left']/div[@class='result c-container ']")
+        # for row in rows:
+        #     # print row.getchildren()
+        #     print row.values()
+        """
+        nodeString = u''
+        for n in row.xpath("./h3/a/node()"):
+            if isinstance(n, etree._Element):
+                nodeString += parser.unescape(etree.tostring(n,encoding="UTF-8")) # print  etree.tostring(n, pretty_print=True),
+                break
+            else:
+                nodeString += n
+        print nodeString
+        """
             # print
                 # if isinstance(n,Element):
                 #     print n
