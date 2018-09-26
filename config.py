@@ -1,6 +1,6 @@
 
 import os  
- 
+from scripts.exceptions import ConfigException
 
 class Config:
 
@@ -9,6 +9,12 @@ class Config:
     config_handle = {
         'array' : ['search','result_method','terminals'],
         'integer' : ['thread_count','result_count','retry_count','sleep_minute'], #'page_count',
+    }
+
+    array_in_range = {
+        'search':['baidu','google','so','sogou'],
+        'result_method':['redis','text','xlsx'],
+        'terminals':['wap','web'],
     }
     
     array_delimiter = '|'
@@ -41,7 +47,11 @@ class Config:
         return self.config
             
     def arrayHandle(self,field):
-        return self.config[field].split(self.array_delimiter)
+        arr = self.config[field].split(self.array_delimiter)
+        print arr
+        if set(arr).difference(set(self.array_in_range[field])):
+            raise ConfigException('Configuration items exceed predetermined values : %s ' % field)
+        return arr
 
     def integerHandle(self,field):
         try:
@@ -54,4 +64,5 @@ configure = Config().getConfig()
 
 
 if __name__ == '__main__':
+    print configure
     pass

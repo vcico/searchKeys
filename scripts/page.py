@@ -31,6 +31,7 @@ class Page():
 
     search_text = Field() # 搜索的文字
     search_name = Field() # 搜索引擎的名称
+    terminal = Field() # 终端 web 或 wap
 
     search_title = Field()
     search_keyword = Field()
