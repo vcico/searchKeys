@@ -12,7 +12,7 @@ class Baidu(SearchEngine):
 
 
     def __init__(self):
-        # super.__init__()
+        super(Baidu, self).__init__()
         print 'this is baidu '
 
     def url(self,keyword,pageCount):
@@ -26,37 +26,28 @@ class Baidu(SearchEngine):
         # [ {search_title: search_keyword: search_description: search_content: search_index: search_url: danger_msg: }, ]
         # response = self.request(url)
         # selector = etree.HTML(response.text)
-        with open('test.html', 'r') as f:
+        with open('test1.html', 'r') as f:
             content = f.read()
         sel = Selector(text=content.decode("utf-8"))
-        for node in  sel.xpath("//div[@id='content_left']/div[@class='result c-container ']"):
-            print node.extract()
-        # parser = HTMLParser.HTMLParser()
+        rows = []
+        for node in sel.xpath("//div[@id='content_left']/div"):
+            self.index += 1
+            if "result c-container " in  node.xpath("./@class").extract():
+                row = {}
+                row['search_index'] = self.index
+                row['search_url'] = url
+                row['search_title'] = ''.join( node.xpath("./h3/a/node()").extract())
+                contentDomPath = [
+                    ".//div[@class='c-abstract']/em",
+                    ".//div[@class='c-abstract']/text()",
+                    ".//div[@class='c-span18 c-span-last']/font/p[not(@class)]/em",
+                    ".//div[@class='c-span18 c-span-last']/font/p[not(@class)]/text()"
+                ]
+                row['search_description'] = ''.join(node.xpath('|'.join(contentDomPath)).extract())
+                row['danger_msg'] = node.xpath("./div[@class='unsafe_content f13']/a/text()").extract()
+                rows.append(row)
+        return rows
 
-        # selector = etree.HTML(content)
-        # rows = selector.xpath("//div[@id='content_left']/div[@class='result c-container ']")
-        # for row in rows:
-        #     # print row.getchildren()
-        #     print row.values()
-        """
-        nodeString = u''
-        for n in row.xpath("./h3/a/node()"):
-            if isinstance(n, etree._Element):
-                nodeString += parser.unescape(etree.tostring(n,encoding="UTF-8")) # print  etree.tostring(n, pretty_print=True),
-                break
-            else:
-                nodeString += n
-        print nodeString
-        """
-            # print
-                # if isinstance(n,Element):
-                #     print n
-                # else:
-                #     print "--%s--" % n
-            # print etree.tostring(row.xpath("./h3/a")[0], pretty_print=True)
-        #/text()
-        # with open('test.html','w') as f:
-        #     f.write(response.text.encode('utf-8'))
 
 
 

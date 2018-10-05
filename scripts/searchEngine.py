@@ -27,8 +27,10 @@ class SearchEngine:
 
     terminal = '' # 终端 web或手机端  获取到的头部信息不同
 
-    # def __init__(self):
-    #     print "this is search Engine"
+    def __init__(self):
+        self.index = 0
+        print "this is search Engine"
+
     @classmethod
     def setTerminal(cls,ter):
         cls.terminal = ter
