@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 
-from config import configure
+from config import configure,logger
 import math
 from scripts.page import Page
 import requests
@@ -25,15 +25,15 @@ class SearchEngine:
 
     sleep = 0 # 同一个搜索引擎 每爬取一个页面休眠？秒
 
-    terminal = '' # 终端 web或手机端  获取到的头部信息不同
-
     def __init__(self):
         self.index = 0
+        self.terminal = 'web'  # 终端 web或手机端  获取到的头部信息不同
         print "this is search Engine"
 
-    @classmethod
-    def setTerminal(cls,ter):
-        cls.terminal = ter
+
+    def setTerminal(self,ter):
+        logger.debug("[setTerminal] %s" % ter)
+        self.terminal = ter
 
     @abstractmethod
     def url(self, keyword, pageCount):
@@ -45,15 +45,37 @@ class SearchEngine:
         """
 
     @abstractmethod
-    def searchRows(self, url):
+    def _terminal_web(self,url):
+        """
+        抽取电脑端搜索结果项
+        :param url:
+        :return:
+        """
+
+    @abstractmethod
+    def _terminal_wap(self, url):
+        """
+        抽取手机端搜索结果项
+        :param url:
+        :return:
+        """
+
+    def searchRows(self,url):
         """
         解析搜索结果页面
         :param url: string 查询结果url
         :return: list [ {search_title: search_keyword: search_description: search_content: search_index: search_url: danger_msg: }, ]
         """
+        # return [ {search_title: search_keyword: search_description: search_content: search_index: search_url: danger_msg: }, ]
+        if(self.terminal == "web"):
+            return self._terminal_web(url)
+        elif (self.terminal == "wap"):
+            return self._terminal_wap(url)
+        else:
+            logger.warning(" terminal is error [%s] " % self.terminal)
 
     @classmethod
-    def headers(cls):
+    def headers(cls,terminal):
         """
         返回获取搜索页面的头部信息
         :return: dict
@@ -89,11 +111,11 @@ class SearchEngine:
             # 'Host': 'www.baidu.com',
             # 'Referer': 'http://baidu.com/',
             # 'Upgrade-Insecure-Requests': '1',
-            'User-Agent': random.choice(userAgents[cls.terminal])
+            'User-Agent': random.choice(userAgents[terminal])
         }
 
     @classmethod
-    def spiderHeaders(cls):
+    def spiderHeaders(cls,terminal):
         """
         模拟爬虫头部信息 爬取目标站 手机端
         :return: dict
@@ -118,7 +140,7 @@ class SearchEngine:
             'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'zh-CN,zh;q=0.9',
             'Connection': 'keep-alive',
-            'User-Agent': random.choice(userAgents[cls.terminal])
+            'User-Agent': random.choice(userAgents[terminal])
         }
 
     def pages(self, keyargs):
@@ -128,20 +150,27 @@ class SearchEngine:
         :return: yield Page
         """
         pageCount = math.ceil(configure['result_count'] / self.pageSize)
-        urls = self.url(keyargs[1], int(pageCount))
         for ter in configure['terminals']:
             self.setTerminal(ter)
+            self.index = 0
+            urls = self.url(keyargs[1], int(pageCount))
+            logger.debug("[pages] %s %s %s terminal will get search row" % (keyargs[0],keyargs[1],ter))
             for url in urls:
-                self.searchRows(url)
+                for row in self.searchRows(url):
+                    p = Page()
+                    p['search_text'] = keyargs[1]
+                    p['search_name'] = keyargs[0]
+                    for k, v in row.items():
+                        p[k] = v
+                    yield p
                 break
-            break
-                # for row in self.searchRows(url):
-                #     p = Page()
-                #     p['search_text'] = keyargs[1]
-                #     p['search_name'] = keyargs[0]
-                #     for k, v in row.items():
-                #         p[k] = v
-                #     yield p
+
+    def targetUrl(self,searchUrl):
+        """
+        根据搜索引擎的跳转URL获取真实的目标网址
+        :param searchUrl: 跳转到真是目标网址的搜索引擎url
+        :return: string 真是的目标网址
+        """
 
     def target(self, page):
         """
@@ -149,7 +178,7 @@ class SearchEngine:
         :param page: Page
         :return: yield Page
         """
-        content = self.request(page.url,search=False)
+        content = self.request(self.targetUrl(page['search_url']),search=False)
 
 
     def search(self, keyargs):
@@ -158,23 +187,28 @@ class SearchEngine:
         :param keyargs:  (搜索名称,关键词)
         :return: yield Page对象
         """
-        self.pages(keyargs)
-        # for page in self.pages(keyargs):
-        #     print page
+        logger.debug("[search] %s search %s" % (keyargs[0],keyargs[1]))
+        # self.pages(keyargs)
+        for page in self.pages(keyargs):
+            # print page
+            print self.target(page)
+            # print page['search_text'] ,'--' ,page['search_name']
+            # print type(page['search_text'])
+            # print type(page['search_name'].decode('utf-8'))
             # yield self.target(page)
 
     @classmethod
-    def request(cls,url,search=True):
+    def request(cls,url,search=True,terminal='web'):
         """
         请求网页内容
         :param url: 网址
         :param search: 是否是搜索引擎的页面  用于获取不同的header
         :return: requests.Response | False
         """
-        print "will get content of page %s " % url
+        logger.debug( "[request] will get content of page: %s " % url )
         for i in range(configure['retry_count']+1):
             try:
-                return requests.get(url, headers=cls.headers() if search else cls.spiderHeaders(), timeout=30)
+                return requests.get(url, headers=cls.headers(terminal) if search else cls.spiderHeaders(terminal), timeout=30)
             except requests.exceptions.RequestException,e:
-                print "%s request fail:  %s" % (url, e.message)
+                logger.warning( "[%d] request fail %s :  %s" % (i,url, e.message))
         return False

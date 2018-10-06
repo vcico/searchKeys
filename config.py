@@ -1,5 +1,9 @@
+#!/usr/bin/python
+# -*- coding:utf-8 -*-
 
-import os  
+import os
+import logging
+import time
 from scripts.exceptions import ConfigException
 
 class Config:
@@ -60,8 +64,30 @@ class Config:
             raise Exception("Configuration format error: %s Must be number " % field)
         return result
 
-configure = Config().getConfig()
 
+def getLogger():
+    """
+    logger.debug('debug message')
+    logger.info('info message')
+    logger.warn('warn message')
+    logger.error('error message')
+    logger.critical('critical message')
+    :return: logger
+    """
+    logger = logging.getLogger('N')
+    logger.setLevel(level=logging.DEBUG)
+    handler = logging.FileHandler('../log/%s' %  time.strftime("%Y-%m-%d.log", time.localtime()))
+    handler.setLevel(logging.WARNING)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    logger.addHandler(console)
+    return logger
+
+configure = Config().getConfig()
+logger = getLogger()
 
 if __name__ == '__main__':
     print configure

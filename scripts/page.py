@@ -38,7 +38,7 @@ class Page():
     search_description = Field()
     search_content = Field()
     search_index = Field()
-    search_url = Field()
+    search_url = Field()# 跳转到目标站的网址
     danger_msg = Field()
 
     is_wap = Field()
@@ -65,7 +65,10 @@ class Page():
         return iter(self.fields)
 
     def __str__(self):
-        return "<Page %s %s>"% (self.search_text,self.search_name)
+        # print type(self['search_text'])
+        # print type(self['search_name'].decode('utf-8'))  #
+        return "<Page %s %s %s %d>" %  (self['search_name'],self['terminal'], self['search_text'].encode("utf-8") ,self['search_index'])
+        # return u"<Page %s %s>" % (self['search_text'], self['search_name'].decode('utf-8'))
 
 if __name__ == '__main__':
     pass
